@@ -24,7 +24,7 @@ To use the AI features, you will need an **OpenAI API Key**.
 3. Generate a Secret Key in the **API Keys** section.
 
 ### Usage
-1. Open the [Live Demo](YOUR_GITHUB_PAGES_LINK_HERE) or download `reader.html` and open it in your browser.
+1. Open the [Live Demo](https://github.com/Denissgod/reader_ai) or download `reader.html` and open it in your browser.
 2. Enter your API Key in the header input field.
 3. Upload your e-book file.
 4. Click on any unfamiliar word to see the magic happen!
