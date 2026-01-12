@@ -40,5 +40,11 @@ This app is optimized for the `gpt-4o-mini` model, which is:
 * **Libraries:** `epub.js` (Epub rendering), `pdf.js` (PDF support), `jszip` (Archive handling).
 * **API:** OpenAI Chat Completions.
 
+## 💵 Donates
+* EVM:
+**0x46D7074095982a7635a2A069fe900738FEe443f1**
+* SOL:
+**G3Peo2KJuZEUkYE5e6Ly8WxizqJXCAZs9oJ5qhc8vDrx**
+
 ---
 *Created for learners who want to master English by reading what they love.*
