@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --color-white: rgba(255, 255, 255, 1);
@@ -275,6 +276,30 @@
             font-size: var(--font-size-base);
             cursor: help;
             title: 'API Key Status';
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-base);
+            color: var(--color-gray-400);
+            text-decoration: none;
+            transition: all 150ms ease;
+            font-size: 18px;
+            margin-left: var(--space-12);
+        }
+
+        .github-link:hover {
+            color: var(--color-text);
+            background-color: var(--color-secondary);
+            transform: scale(1.1);
+        }
+
+        .github-link:active {
+            transform: scale(0.95);
         }
 
         .main-content {
@@ -578,6 +603,9 @@
             <div class="api-key-wrapper">
                 <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Enter OpenAI API Key">
                 <span class="api-key-status" id="apiKeyStatus">🔴</span>
+                <a href="https://github.com/Denissgod/reader_ai" target="_blank" rel="noopener noreferrer" class="github-link" title="View on GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
             </div>
         </div>
         <div class="controls">
@@ -995,7 +1023,7 @@ Examples:
 
         function populatePdfToc() {
             tocList.innerHTML = '';
-            for (let i = 0; i < Math.min(totalPages, 30); i++) {
+            for (let i = 0; i < Math.min(totalPages, 1000); i++) {
                 const li = document.createElement('li');
                 const button = document.createElement('button');
                 button.className = 'toc-item';
