@@ -3,448 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Learning E-Book Reader</title>
+    <title>AI Language Library & Reader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.93/epub.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --color-white: rgba(255, 255, 255, 1);
-            --color-black: rgba(0, 0, 0, 1);
-            --color-cream-50: rgba(252, 252, 249, 1);
-            --color-cream-100: rgba(255, 255, 253, 1);
-            --color-gray-200: rgba(245, 245, 245, 1);
-            --color-gray-300: rgba(167, 169, 169, 1);
-            --color-gray-400: rgba(119, 124, 124, 1);
-            --color-slate-500: rgba(98, 108, 113, 1);
-            --color-brown-600: rgba(94, 82, 64, 1);
-            --color-charcoal-700: rgba(31, 33, 33, 1);
-            --color-charcoal-800: rgba(38, 40, 40, 1);
-            --color-slate-900: rgba(19, 52, 59, 1);
-            --color-teal-300: rgba(50, 184, 198, 1);
-            --color-teal-400: rgba(45, 166, 178, 1);
-            --color-teal-500: rgba(33, 128, 141, 1);
-            --color-teal-600: rgba(29, 116, 128, 1);
-            --color-teal-700: rgba(26, 104, 115, 1);
-            --color-red-400: rgba(255, 84, 89, 1);
-            --color-red-500: rgba(192, 21, 47, 1);
-            
-            --color-background: var(--color-cream-50);
-            --color-surface: var(--color-cream-100);
-            --color-text: var(--color-slate-900);
-            --color-text-secondary: var(--color-slate-500);
-            --color-primary: var(--color-teal-500);
-            --color-primary-hover: var(--color-teal-600);
-            --color-border: rgba(94, 82, 64, 0.2);
-            --color-btn-primary-text: var(--color-cream-50);
-            
-            --font-size-base: 14px;
-            --font-size-sm: 12px;
-            --font-size-lg: 16px;
-            --font-size-xl: 18px;
-            --font-size-2xl: 20px;
-            --space-4: 4px;
-            --space-8: 8px;
-            --space-12: 12px;
-            --space-16: 16px;
-            --space-20: 20px;
-            --radius-base: 8px;
-            --radius-lg: 12px;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-background: var(--color-charcoal-700);
-                --color-surface: var(--color-charcoal-800);
-                --color-text: var(--color-gray-200);
-                --color-text-secondary: rgba(167, 169, 169, 0.7);
-                --color-primary: var(--color-teal-300);
-                --color-primary-hover: var(--color-teal-400);
-                --color-btn-primary-text: var(--color-slate-900);
-                --color-border: rgba(167, 169, 169, 0.3);
-            }
-        }
-
         * {
-            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-text);
+        :root {
+            --bg-primary: #faf9f7;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f0ede8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0dbd3;
+            --accent: #2b8a8a;
+            --accent-hover: #1f6464;
+        }
+
+        body.dark-mode {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --border-color: #444444;
+            --accent: #4db8b8;
+            --accent-hover: #3d9898;
+        }
+
+        body.sepia-mode {
+            --bg-primary: #f4ecd8;
+            --bg-secondary: #f9f3e6;
+            --bg-tertiary: #ede3cc;
+            --text-primary: #5b4636;
+            --text-secondary: #8b6f47;
+            --border-color: #d9cfc0;
+            --accent: #8b6f47;
+            --accent-hover: #6b5437;
         }
 
         body {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
         }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-16);
-            background-color: var(--color-surface);
-            border-bottom: 1px solid var(--color-border);
-            gap: var(--space-16);
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: var(--space-12);
-            flex: 1;
-        }
-
-        .header-title {
-            margin: 0;
-            font-size: var(--font-size-xl);
-            font-weight: 600;
-        }
-
-        .file-input-wrapper {
+        .book-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
             position: relative;
-            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .file-input-wrapper input[type="file"] {
+        .book-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-card-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+            color: var(--text-primary);
+        }
+
+        .book-card-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .book-card-progress {
+            width: 100%;
+            height: 4px;
+            background-color: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-card-progress-bar {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+        }
+
+        .book-card-delete {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .book-card:hover .book-card-delete {
+            opacity: 1;
+        }
+
+        .book-card-delete:hover {
+            color: #d63031;
+        }
+
+        .modal-overlay {
             display: none;
-        }
-
-        .btn {
-            display: inline-flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
             align-items: center;
             justify-content: center;
-            padding: var(--space-8) var(--space-16);
-            border-radius: var(--radius-base);
-            font-size: var(--font-size-base);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 150ms ease;
-            border: none;
-            text-decoration: none;
-            background-color: var(--color-primary);
-            color: var(--color-btn-primary-text);
         }
 
-        .btn:hover {
-            background-color: var(--color-primary-hover);
-        }
-
-        .btn:active {
-            opacity: 0.9;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background-color: var(--color-surface);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--color-gray-200);
-        }
-
-        .btn-sm {
-            padding: var(--space-4) var(--space-8);
-            font-size: var(--font-size-sm);
-        }
-
-        .controls {
+        .modal-overlay.show {
             display: flex;
-            gap: var(--space-8);
-            align-items: center;
         }
 
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: var(--space-8);
-        }
-
-        .control-group label {
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            font-weight: 500;
-        }
-
-        .slider {
-            width: 100px;
-            height: 4px;
-            border-radius: 2px;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--color-border);
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            cursor: pointer;
-        }
-
-        .slider::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            cursor: pointer;
-            border: none;
-        }
-
-        .toggle {
-            display: flex;
-            align-items: center;
-            gap: var(--space-8);
-            cursor: pointer;
-            font-size: var(--font-size-sm);
-            font-weight: 500;
-        }
-
-        .toggle-switch {
-            width: 40px;
-            height: 24px;
-            background-color: var(--color-border);
+        .modal-content {
+            background-color: var(--bg-secondary);
             border-radius: 12px;
-            position: relative;
-            transition: background-color 150ms ease;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
+            color: var(--text-primary);
         }
 
-        .toggle-switch.active {
-            background-color: var(--color-primary);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
+        .loading-spinner {
+            display: inline-block;
             width: 20px;
             height: 20px;
-            background-color: white;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
             border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: left 150ms ease;
+            animation: spin 0.8s linear infinite;
         }
 
-        .toggle-switch.active::after {
-            left: 18px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .api-key-wrapper {
-            display: flex;
-            align-items: center;
-            gap: var(--space-8);
-        }
-
-        .api-key-input {
-            padding: var(--space-8) var(--space-12);
-            border-radius: var(--radius-base);
-            border: 1px solid var(--color-border);
-            background-color: var(--color-surface);
-            color: var(--color-text);
-            font-size: var(--font-size-sm);
-            width: 220px;
-            transition: border-color 150ms ease;
-        }
-
-        .api-key-input:focus {
-            outline: none;
-            border-color: var(--color-primary);
-        }
-
-        .api-key-input::placeholder {
-            color: var(--color-text-secondary);
-        }
-
-        .api-key-status {
-            font-size: var(--font-size-base);
-            cursor: help;
-            title: 'API Key Status';
-        }
-
-        .github-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-base);
-            color: var(--color-gray-400);
-            text-decoration: none;
-            transition: all 150ms ease;
-            font-size: 18px;
-            margin-left: var(--space-12);
-        }
-
-        .github-link:hover {
-            color: var(--color-text);
-            background-color: var(--color-secondary);
-            transform: scale(1.1);
-        }
-
-        .github-link:active {
-            transform: scale(0.95);
-        }
-
-        .main-content {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: var(--color-surface);
-            border-right: 1px solid var(--color-border);
-            padding: var(--space-16);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-16);
-        }
-
-        .sidebar-section h3 {
-            margin: 0 0 var(--space-8) 0;
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .toc-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-4);
-        }
-
-        .toc-item {
-            padding: var(--space-8) var(--space-12);
-            background-color: var(--color-background);
-            border-radius: var(--radius-base);
-            cursor: pointer;
-            font-size: var(--font-size-sm);
-            transition: background-color 150ms ease;
-            border: none;
-            text-align: left;
-            color: var(--color-text);
-        }
-
-        .toc-item:hover {
-            background-color: var(--color-gray-200);
-        }
-
-        .toc-item.active {
-            background-color: var(--color-primary);
-            color: white;
-        }
-
-        .reader-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .empty-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            flex-direction: column;
-            color: var(--color-text-secondary);
-            text-align: center;
-            gap: var(--space-16);
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            opacity: 0.3;
-        }
-
-        .empty-state p {
-            margin: 0;
-            max-width: 300px;
-        }
-
-        .reader-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            padding: var(--space-20);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        .reader-content {
-            max-width: 700px;
-            width: 100%;
-            line-height: 1.8;
-            font-size: var(--font-size-lg);
-            text-align: justify;
-        }
-
-        .reader-content p {
-            margin-bottom: var(--space-16);
-        }
-
-        .reader-content h1, .reader-content h2, .reader-content h3 {
-            margin-top: var(--space-20);
-            margin-bottom: var(--space-12);
-        }
-
-        .reader-content img {
-            max-width: 100%;
-            height: auto;
-            margin: var(--space-16) 0;
-        }
-
-        .txt-reader {
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        /* Mobile-optimized text selection */
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: text !important;
+            user-select: text !important;
         }
 
         .translation-popup {
             position: fixed;
-            background-color: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-12);
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
             max-width: 350px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+            z-index: 99999 !important;
             display: none;
-            backdrop-filter: blur(4px);
-            animation: popupSlideIn 200ms ease;
+            animation: popupFadeIn 0.2s ease;
         }
 
-        @keyframes popupSlideIn {
+        @keyframes popupFadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: scale(1);
             }
         }
 
@@ -452,349 +198,487 @@
             display: block;
         }
 
-        .popup-word {
-            font-size: var(--font-size-lg);
-            font-weight: 600;
-            color: var(--color-primary);
-            margin-bottom: var(--space-8);
-            word-wrap: break-word;
+        /* Floating AI button for mobile */
+        .mobile-ai-button {
+            position: fixed;
+            display: none;
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 99998;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
         }
 
-        .popup-ukrainian {
-            font-size: var(--font-size-sm);
-            color: var(--color-primary);
-            font-weight: 600;
-            margin-bottom: var(--space-12);
-            padding-bottom: var(--space-12);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .popup-translation {
-            font-size: var(--font-size-base);
-            color: var(--color-text);
-            margin-bottom: var(--space-12);
-            padding-bottom: var(--space-12);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .popup-examples {
+        .mobile-ai-button.show {
             display: flex;
-            flex-direction: column;
-            gap: var(--space-8);
+            align-items: center;
+            justify-content: center;
         }
 
-        .popup-example-title {
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .mobile-ai-button:active {
+            transform: scale(0.9);
         }
 
-        .popup-example {
-            font-size: var(--font-size-sm);
-            color: var(--color-text);
-            padding: var(--space-8);
-            background-color: var(--color-background);
-            border-radius: var(--radius-base);
-            line-height: 1.5;
-            font-style: italic;
+        .theme-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .popup-word-highlighted {
-            font-weight: 600;
-            color: var(--color-primary);
+        .theme-selector {
+            display: flex;
+            gap: 0.25rem;
+            background-color: var(--bg-tertiary);
+            padding: 0.25rem;
+            border-radius: 6px;
         }
 
-        .close-popup {
-            position: absolute;
-            top: var(--space-8);
-            right: var(--space-8);
+        .theme-btn {
+            padding: 0.5rem 0.75rem;
             background: none;
             border: none;
-            color: var(--color-text-secondary);
             cursor: pointer;
-            font-size: var(--font-size-lg);
-            transition: color 150ms ease;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            transition: all 0.2s;
         }
 
-        .close-popup:hover {
-            color: var(--color-text);
+        .theme-btn.active {
+            background-color: var(--bg-secondary);
+            color: var(--accent);
+            font-weight: 600;
         }
 
-        .footer {
+        /* Language Selector Styling */
+        .language-selector {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-12) var(--space-16);
-            background-color: var(--color-surface);
-            border-top: 1px solid var(--color-border);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .pagination {
-            display: flex;
-            gap: var(--space-8);
+            gap: 0.25rem;
+            background-color: var(--bg-tertiary);
+            padding: 0.25rem;
+            border-radius: 6px;
             align-items: center;
         }
 
-        .pagination button {
-            padding: var(--space-4) var(--space-12);
-            border: 1px solid var(--color-border);
-            background-color: var(--color-surface);
-            color: var(--color-text);
-            border-radius: var(--radius-base);
+        .language-btn {
+            padding: 0.4rem 0.6rem;
+            background: none;
+            border: none;
             cursor: pointer;
-            font-size: var(--font-size-sm);
-            transition: all 150ms ease;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
-        .pagination button:hover:not(:disabled) {
-            background-color: var(--color-primary);
-            color: var(--color-btn-primary-text);
-            border-color: var(--color-primary);
+        .language-btn.active {
+            background-color: var(--bg-secondary);
+            color: var(--accent);
+            font-weight: 600;
         }
 
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .language-btn:hover {
+            color: var(--text-primary);
         }
 
-        .hide-sidebar {
-            display: none;
+        .reader-content-wrapper {
+            background-color: var(--bg-primary);
+        }
+
+        /* Progress Slider Styling */
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            outline: none;
+            transition: all 0.1s;
+        }
+
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+            transform: scale(1.2);
+        }
+
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+
+            transform: scale(1.2);
+        }
+
+            background: transparent;
+            border: none;
+        }
+
+            background-color: var(--accent);
+            height: 8px;
+            border-radius: 4px;
+        }
+
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                width: 200px;
-                padding: var(--space-12);
+            .library-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             }
 
-            .reader-wrapper {
-                padding: var(--space-12);
-            }
-
-            .header {
+            .header-controls {
                 flex-wrap: wrap;
+                gap: 0.5rem;
             }
 
-            .controls {
-                width: 100%;
-                justify-content: space-between;
+                height: 6px;
             }
-        }
 
-        .text-selection {
-            position: relative;
-            cursor: text;
-            user-select: text;
+                width: 16px;
+                height: 16px;
+            }
+
+                width: 16px;
+                height: 16px;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <div class="header-left">
-            <h1 class="header-title">📚 Language Reader</h1>
-            <div class="file-input-wrapper">
-                <button class="btn">Upload File</button>
-                <input type="file" id="fileInput" accept=".epub,.txt,.pdf">
+<body class="light-mode">
+    <!-- Header -->
+    <div class="fixed top-0 left-0 right-0 h-16 bg-white border-b" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+        <div class="h-full px-4 flex items-center justify-between gap-4 header-controls">
+            <!-- Left Section -->
+            <div class="flex items-center gap-3">
+                <button id="libraryBtn" class="p-2 rounded hover:bg-gray-200 transition" title="Library" style="background-color: transparent; color: var(--text-primary);">
+                    <i class="fas fa-book"></i>
+                </button>
+                <div id="currentBookTitle" class="font-semibold text-sm" style="color: var(--text-primary); min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    No Book
+                </div>
             </div>
-            <div class="api-key-wrapper">
-                <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Enter OpenAI API Key">
-                <span class="api-key-status" id="apiKeyStatus">🔴</span>
-                <a href="https://github.com/Denissgod/reader_ai" target="_blank" rel="noopener noreferrer" class="github-link" title="View on GitHub">
+
+            <!-- Center Section -->
+            <div class="flex items-center gap-2">
+                <button id="fontDecBtn" class="p-1 px-2 rounded text-sm hover:bg-gray-200" style="background-color: transparent; color: var(--text-primary);">
+                    A-
+                </button>
+                <span id="fontSizeDisplay" class="text-xs" style="color: var(--text-secondary);">14px</span>
+                <button id="fontIncBtn" class="p-1 px-2 rounded text-sm hover:bg-gray-200" style="background-color: transparent; color: var(--text-primary);">
+                    A+
+                </button>
+            </div>
+
+            <!-- Language Toggle -->
+            <div class="language-selector">
+                <button class="language-btn active" data-lang="ua" title="Ukrainian">UA</button>
+                <button class="language-btn" data-lang="en" title="English">EN</button>
+                <button class="language-btn" data-lang="ru" title="Russian">RU</button>
+            </div>
+
+            <!-- Right Section -->
+            <div class="flex items-center gap-2">
+                <div class="theme-toggle">
+                    <div class="theme-selector">
+                        <button class="theme-btn active" data-theme="light" title="Light Mode">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                        <button class="theme-btn" data-theme="dark" title="Dark Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <button class="theme-btn" data-theme="sepia" title="Sepia Mode">
+                            <i class="fas fa-book-open"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="password" id="apiKeyInput" placeholder="OpenAI API Key" class="px-3 py-2 border rounded text-sm" style="background-color: var(--bg-tertiary); border-color: var(--border-color); color: var(--text-primary);">
+                <span id="apiKeyStatus" title="API Key Status" style="color: var(--text-secondary);">🔴</span>
+
+                <a href="https://github.com/Denissgod/reader_ai" target="_blank" rel="noopener noreferrer" class="p-2 hover:bg-gray-200 rounded transition" style="color: var(--text-secondary);">
                     <i class="fab fa-github"></i>
                 </a>
             </div>
         </div>
-        <div class="controls">
-            <div class="control-group">
-                <label for="fontSizeSlider">Font:</label>
-                <input type="range" id="fontSizeSlider" class="slider" min="12" max="24" value="16">
+    </div>
+
+    <!-- Main Content -->
+    <div class="pt-16 h-screen flex flex-col">
+        <!-- Library View -->
+        <div id="libraryView" class="flex-1 overflow-y-auto p-6 bg-white" style="background-color: var(--bg-primary);">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">My Library</h1>
+                <button id="uploadNewBtn" class="p-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition" style="background-color: var(--accent);">
+                    <i class="fas fa-plus"></i> Add Book
+                </button>
+                <input type="file" id="fileInput" accept=".epub,.txt,.pdf" style="display: none;">
             </div>
-            <div class="toggle">
-                <span>Dark Mode</span>
-                <div class="toggle-switch" id="darkModeToggle"></div>
+            <div id="libraryGrid" class="library-grid"></div>
+        </div>
+
+        <!-- Reader View -->
+        <div id="readerView" style="display: none;" class="flex-1 flex flex-col overflow-hidden">
+            <!-- Reader Content -->
+            <div class="flex-1 overflow-y-auto p-6 reader-content-wrapper">
+                <div id="readerContent" class="max-w-2xl mx-auto" style="color: var(--text-primary);"></div>
+            </div>
+
+            <!-- Footer: Pagination with Progress Slider -->
+            <div class="h-12 border-t px-6 flex items-center justify-between gap-4" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                <button id="prevBtn" class="px-4 py-1 rounded border flex-shrink-0" style="border-color: var(--border-color); color: var(--text-primary);">
+                    ← Prev
+                </button>
+                
+                <!-- Page Progress Slider -->
+                <div class="flex-1 flex items-center gap-3 min-w-0">
+                    <input type="range" id="pageSlider" min="1" max="1" value="1" class="flex-1 h-2 rounded appearance-none cursor-pointer" style="background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--slider-percent, 0%), var(--bg-tertiary) var(--slider-percent, 0%), var(--bg-tertiary) 100%); accent-color: var(--accent);">
+                    <span id="pageInfo" class="text-xs whitespace-nowrap flex-shrink-0" style="color: var(--text-secondary); min-width: 50px; text-align: right;">0 / 0</span>
+                </div>
+                
+                <button id="nextBtn" class="px-4 py-1 rounded border flex-shrink-0" style="border-color: var(--border-color); color: var(--text-primary);">
+                    Next →
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="main-content">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-section">
-                <h3>Contents</h3>
-                <ul class="toc-list" id="tocList"></ul>
-            </div>
-        </div>
-
-        <div class="reader-container">
-            <div class="empty-state" id="emptyState">
-                <div class="empty-state-icon">📖</div>
-                <p>Upload an EPUB, TXT, or PDF file to start reading and learning.</p>
-            </div>
-            <div class="reader-wrapper" id="readerWrapper" style="display: none;">
-                <div class="reader-content" id="readerContent" contenteditable="false"></div>
-            </div>
-        </div>
+    <!-- Translation Popup -->
+    <div id="translationPopup" class="translation-popup">
+        <button id="closePopup" class="absolute top-2 right-2 bg-none border-none cursor-pointer text-lg" style="color: var(--text-secondary);">✕</button>
+        <div id="popupWord" class="font-bold text-lg mb-2" style="color: var(--accent);"></div>
+        <div id="popupUkrainian" class="text-sm font-semibold mb-3 pb-3 border-b" style="border-color: var(--border-color); color: var(--accent);"></div>
+        <div id="popupTranslation" class="text-sm mb-3 pb-3 border-b" style="border-color: var(--border-color); color: var(--text-primary);"></div>
+        <div id="popupExamples" class="text-sm space-y-2" style="color: var(--text-primary);"></div>
     </div>
 
-    <div class="footer">
-        <div id="statusText">Ready</div>
-        <div class="pagination">
-            <button id="prevBtn" class="btn btn-secondary btn-sm" disabled>← Previous</button>
-            <span id="pageInfo"></span>
-            <button id="nextBtn" class="btn btn-secondary btn-sm" disabled>Next →</button>
-        </div>
-    </div>
+    <!-- Mobile floating AI button -->
+    <button id="mobileAIButton" class="mobile-ai-button" title="Translate selected word">
+        <i class="fas fa-wand-magic-sparkles"></i>
+    </button>
 
-    <div class="translation-popup" id="translationPopup">
-        <button class="close-popup" id="closePopup">✕</button>
-        <div class="popup-word" id="popupWord"></div>
-        <div class="popup-ukrainian" id="popupUkrainian"></div>
-        <div class="popup-translation" id="popupTranslation"></div>
-        <div class="popup-examples" id="popupExamples"></div>
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Add a Book to Your Library</h2>
+            <p class="text-sm mb-4" style="color: var(--text-secondary);">Upload EPUB, PDF, or TXT files to build your personal library.</p>
+            <div class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50" id="dropZone" style="border-color: var(--border-color); background-color: var(--bg-tertiary);">
+                <i class="fas fa-cloud-upload-alt text-2xl mb-2" style="color: var(--accent);"></i>
+                <p style="color: var(--text-primary);">Drag & drop or click to upload</p>
+                <p class="text-xs mt-2" style="color: var(--text-secondary);">EPUB, PDF, or TXT</p>
+            </div>
+            <button id="closeUploadModal" class="w-full mt-4 p-2 rounded border" style="border-color: var(--border-color); color: var(--text-primary);">Cancel</button>
+        </div>
     </div>
 
     <script>
-        // ==================== SIMPLE MOCK DICTIONARY ====================
-        const mockDictionary = {
-            'the': 'def. art. - used to refer to something previously mentioned',
-            'hello': 'n. - a polite word used when greeting someone',
-            'world': 'n. - the earth and all the people, animals, plants, etc. on it',
-            'book': 'n. - a set of written pages bound together',
-            'read': 'v. - to look at and understand written words',
-            'learn': 'v. - to acquire knowledge or skills',
-            'language': 'n. - a system of communication using words',
-            'beautiful': 'adj. - pleasing to look at or pleasant',
-            'understand': 'v. - to know the meaning of something',
-            'important': 'adj. - having great significance or value',
-            'time': 'n. - the indefinite continued progress of existence',
-            'good': 'adj. - of high quality; satisfactory',
-            'people': 'n. - human beings in general',
-            'life': 'n. - the condition of being alive',
-            'day': 'n. - a period of 24 hours',
-            'work': 'v./n. - activity involving effort; employment',
-            'help': 'v. - to make something easier for someone',
-            'word': 'n. - a single distinct meaningful element of speech',
-            'example': 'n. - a thing characteristic of its kind',
-            'sentence': 'n. - a set of words that makes complete sense',
-        };
-
-        // ==================== REAL OPENAI API INTEGRATION ====================
-        async function fetchOpenAITranslation(word) {
-            if (!openaiApiKey || openaiApiKey.trim().length === 0) {
-                return {
-                    ukrainian: '❌ Missing API Key',
-                    translation: 'Please enter your OpenAI API Key in the header.',
-                    examples: []
-                };
+        // ==================== INDEXEDDB MANAGER ====================
+        class LibraryManager {
+            constructor() {
+                this.dbName = 'AILanguageLibrary';
+                this.dbVersion = 1;
+                this.storeName = 'books';
+                this.cacheStoreName = 'translations_cache';
+                this.settingsStoreName = 'settings';
             }
 
-            try {
-                const prompt = `Provide the translation and definition for the word '${word}'. Format the response exactly like this:
-[UKRAINIAN_TRANSLATION]
-[WORD] - [definition in English]
-Examples:
-[Sentence in a simple tense]
-[Sentence in a continuous or perfect tense]
-[A question or a negative sentence]`;
-
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${openaiApiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: 'You are a language learning assistant. Provide clear, concise translations and practical examples.'
-                            },
-                            {
-                                role: 'user',
-                                content: prompt
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 300
-                    })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    console.error('OpenAI API Error:', error);
-                    return {
-                        ukrainian: '❌ API Error',
-                        translation: error.error?.message || 'Failed to fetch translation. Check your API key.',
-                        examples: []
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(this.dbName, this.dbVersion);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+                            store.createIndex('lastRead', 'lastReadDate', { unique: false });
+                        }
+                        if (!db.objectStoreNames.contains(this.cacheStoreName)) {
+                            db.createObjectStore(this.cacheStoreName, { keyPath: 'word' });
+                        }
+                        if (!db.objectStoreNames.contains(this.settingsStoreName)) {
+                            db.createObjectStore(this.settingsStoreName, { keyPath: 'key' });
+                        }
                     };
-                }
+                });
+            }
 
-                const data = await response.json();
-                const content = data.choices[0].message.content;
-                
-                // Parse the response
-                const lines = content.split('\n').filter(line => line.trim());
-                let ukrainian = '';
-                let translation = '';
-                let examples = [];
-
-                if (lines.length > 0) {
-                    ukrainian = lines[0]; // First line is Ukrainian translation
-                }
-                if (lines.length > 1) {
-                    translation = lines[1]; // Second line is definition
-                }
-                if (lines.length > 3) {
-                    // Lines after "Examples:" are the example sentences
-                    examples = lines.slice(3).filter(line => line.trim() && !line.toLowerCase().includes('examples'));
-                }
-
-                return { ukrainian, translation, examples };
-            } catch (error) {
-                console.error('Translation fetch error:', error);
-                return {
-                    ukrainian: '❌ Network Error',
-                    translation: 'Failed to connect to OpenAI API. Check your internet connection.',
-                    examples: []
+            async addBook(file, fileType) {
+                const db = await this.init();
+                const arrayBuffer = await file.arrayBuffer();
+                const bookData = {
+                    id: `book_${Date.now()}`,
+                    title: file.name.replace(/\.[^/.]+$/, ''),
+                    fileData: arrayBuffer,
+                    fileType: fileType,
+                    fileName: file.name,
+                    addedDate: new Date().toISOString(),
+                    lastReadDate: new Date().toISOString(),
+                    lastPosition: { pageIndex: 0, fileType: fileType },
+                    progress: 0
                 };
+
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.add(bookData);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(bookData);
+                });
+            }
+
+            async getAllBooks() {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.storeName], 'readonly');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.getAll();
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(req.result);
+                });
+            }
+
+            async getBook(id) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.storeName], 'readonly');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.get(id);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(req.result);
+                });
+            }
+
+            async updateBook(id, updates) {
+                const db = await this.init();
+                const book = await this.getBook(id);
+                Object.assign(book, updates, { id });
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.put(book);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(book);
+                });
+            }
+
+            async deleteBook(id) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const req = store.delete(id);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve();
+                });
+            }
+
+            async cacheTranslation(word, data) {
+                const db = await this.init();
+                const cacheData = { word: word.toLowerCase(), ...data, cached: new Date().toISOString() };
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.cacheStoreName], 'readwrite');
+                    const store = tx.objectStore(this.cacheStoreName);
+                    const req = store.put(cacheData);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(cacheData);
+                });
+            }
+
+            async getTranslation(word) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.cacheStoreName], 'readonly');
+                    const store = tx.objectStore(this.cacheStoreName);
+                    const req = store.get(word.toLowerCase());
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(req.result);
+                });
+            }
+
+            async setSetting(key, value) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.settingsStoreName], 'readwrite');
+                    const store = tx.objectStore(this.settingsStoreName);
+                    const req = store.put({ key, value });
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve({ key, value });
+                });
+            }
+
+            async getSetting(key) {
+                const db = await this.init();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction([this.settingsStoreName], 'readonly');
+                    const store = tx.objectStore(this.settingsStoreName);
+                    const req = store.get(key);
+                    req.onerror = () => reject(req.error);
+                    req.onsuccess = () => resolve(req.result?.value);
+                });
             }
         }
 
-        // ==================== STATE MANAGEMENT ====================
+        // ==================== APP STATE ====================
+        const library = new LibraryManager();
         let currentBook = null;
+        let currentBookId = null;
         let currentFileType = null;
         let currentPageIndex = 0;
         let totalPages = 0;
-        let isDarkMode = false;
-        let fontSize = 16;
-        let pdfDoc = null;
+        let fontSize = 14;
+        let currentTheme = 'light';
         let openaiApiKey = localStorage.getItem('openai_api_key') || '';
+        let pdfDoc = null;
+        let saveProgressInterval = null;
 
         // ==================== DOM ELEMENTS ====================
+        const libraryBtn = document.getElementById('libraryBtn');
+        const libraryView = document.getElementById('libraryView');
+        const readerView = document.getElementById('readerView');
+        const uploadNewBtn = document.getElementById('uploadNewBtn');
+        const uploadModal = document.getElementById('uploadModal');
         const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const closeUploadModal = document.getElementById('closeUploadModal');
         const readerContent = document.getElementById('readerContent');
-        const emptyState = document.getElementById('emptyState');
-        const readerWrapper = document.getElementById('readerWrapper');
-        const fontSizeSlider = document.getElementById('fontSizeSlider');
-        const darkModeToggle = document.getElementById('darkModeToggle');
+        const currentBookTitle = document.getElementById('currentBookTitle');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const fontDecBtn = document.getElementById('fontDecBtn');
+        const fontIncBtn = document.getElementById('fontIncBtn');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
         const translationPopup = document.getElementById('translationPopup');
         const popupWord = document.getElementById('popupWord');
         const popupUkrainian = document.getElementById('popupUkrainian');
         const popupTranslation = document.getElementById('popupTranslation');
         const popupExamples = document.getElementById('popupExamples');
         const closePopup = document.getElementById('closePopup');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const pageInfo = document.getElementById('pageInfo');
-        const tocList = document.getElementById('tocList');
-        const statusText = document.getElementById('statusText');
-        const sidebar = document.getElementById('sidebar');
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        const pageSlider = document.getElementById('pageSlider');
+        let currentLanguage = localStorage.getItem('current_language') || 'ua';
 
         // ==================== API KEY MANAGEMENT ====================
         function updateApiKeyStatus() {
@@ -816,233 +700,244 @@ Examples:
             updateApiKeyStatus();
         });
 
-        // ==================== FONT SIZE CONTROL ====================
-        fontSizeSlider.addEventListener('change', (e) => {
-            fontSize = e.target.value;
-            readerContent.style.fontSize = fontSize + 'px';
+        // ==================== THEME MANAGEMENT ====================
+        function setTheme(theme) {
+            document.body.classList.remove('light-mode', 'dark-mode', 'sepia-mode');
+            document.body.classList.add(`${theme}-mode`);
+            currentTheme = theme;
+            localStorage.setItem('theme', theme);
+
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+
+            library.setSetting('theme', theme).catch(console.error);
+        }
+
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
         });
 
-        // ==================== DARK MODE TOGGLE ====================
-        darkModeToggle.addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            darkModeToggle.classList.toggle('active');
-            document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
+        // ==================== LANGUAGE MANAGEMENT ====================
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('current_language', lang);
+
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
         });
 
-        // ==================== FILE UPLOAD ====================
-        document.querySelector('.file-input-wrapper button').addEventListener('click', () => {
-            fileInput.click();
-        });
+        // Initialize language on load
+        setLanguage(currentLanguage);
 
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        // ==================== LIBRARY RENDERING ====================
+        async function renderLibrary() {
+            const books = await library.getAllBooks();
+            const grid = document.getElementById('libraryGrid');
+            grid.innerHTML = '';
 
-            statusText.textContent = 'Loading file...';
-            const fileType = file.name.split('.').pop().toLowerCase();
+            if (books.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center py-8" style="color: var(--text-secondary);">No books yet. Add one to get started!</p>';
+                return;
+            }
+
+            books.sort((a, b) => new Date(b.lastReadDate) - new Date(a.lastReadDate));
+
+            books.forEach(book => {
+                const progress = book.progress || 0;
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div class="book-card-title" title="${book.title}">${book.title}</div>
+                    <div class="book-card-meta">${book.fileType.toUpperCase()}</div>
+                    <div class="book-card-progress">
+                        <div class="book-card-progress-bar" style="width: ${progress}%"></div>
+                    </div>
+                    <button class="book-card-delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.book-card-delete')) {
+                        openBook(book.id);
+                    }
+                });
+
+                card.querySelector('.book-card-delete').addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Delete "${book.title}"?`)) {
+                        await library.deleteBook(book.id);
+                        renderLibrary();
+                    }
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        // ==================== OPENAI TRANSLATION ====================
+        async function fetchOpenAITranslation(word) {
+            // Create cache key that includes language to avoid cross-language cache conflicts
+            const cacheKey = `${word.toLowerCase()}_${currentLanguage}`;
+            
+            try {
+                // Try to get cached translation for this specific language
+                const cached = await library.getTranslation(cacheKey);
+                if (cached) {
+                    return cached;
+                }
+            } catch (e) {
+                // If cache lookup fails, continue to fetch new translation
+            }
+
+            if (!openaiApiKey || openaiApiKey.trim().length === 0) {
+                const errorMsg = currentLanguage === 'ua' ? 'Будь ласка, введіть OpenAI API Key у заголовку.' : 
+                                 currentLanguage === 'ru' ? 'Пожалуйста, введите OpenAI API Key в заголовке.' :
+                                 'Please enter your OpenAI API Key in the header.';
+                return {
+                    word,
+                    translation: '❌ API Key Required',
+                    definition: errorMsg,
+                    examples: [],
+                    language: currentLanguage,
+                    definitionLanguage: currentLanguage
+                };
+            }
 
             try {
-                if (fileType === 'epub') {
-                    await handleEpub(file);
-                } else if (fileType === 'txt') {
-                    await handleTxt(file);
-                } else if (fileType === 'pdf') {
-                    await handlePdf(file);
+                let prompt, systemContent, definitionLanguage;
+
+                if (currentLanguage === 'ua') {
+                    definitionLanguage = 'Ukrainian';
+                    prompt = `Translate the English word "${word}" to Ukrainian and provide a definition. Format EXACTLY like this:
+
+[UKRAINIAN_TRANSLATION]
+[Word "${word}"] - [Definition ONLY in Ukrainian]
+
+Three example sentences in English (do NOT translate):
+1. [Example with "${word}"]
+2. [Example with "${word}"]
+3. [Example with "${word}"]`;
+                    systemContent = 'You are an expert English-Ukrainian language teacher. Translate the word to Ukrainian EXACTLY. Provide definition ONLY in Ukrainian (not English). Keep examples in English. Be precise and concise.';
+                    
+                } else if (currentLanguage === 'ru') {
+                    definitionLanguage = 'Russian';
+                    prompt = `Translate the English word "${word}" to Russian and provide a definition. Format EXACTLY like this:
+
+[RUSSIAN_TRANSLATION]
+[Word "${word}"] - [Definition ONLY in Russian]
+
+Three example sentences in English (do NOT translate):
+1. [Example with "${word}"]
+2. [Example with "${word}"]
+3. [Example with "${word}"]`;
+                    systemContent = 'You are an expert English-Russian language teacher. Translate the word to Russian EXACTLY. Provide definition ONLY in Russian (not English). Keep examples in English. Be precise and concise.';
+                    
                 } else {
-                    statusText.textContent = 'File type not supported';
+                    // English monolingual mode - no translation, only English definition
+                    definitionLanguage = 'English';
+                    prompt = `Provide a concise English-to-English definition for the word "${word}". Format EXACTLY like this:
+
+${word.toUpperCase()}
+[Definition in simple but sophisticated English]
+
+Three example sentences demonstrating real-world usage:
+1. [Example with "${word}"]
+2. [Example with "${word}"]
+3. [Example with "${word}"]`;
+                    systemContent = 'You are an advanced English language expert. Provide ONLY an English definition (no translations). Give three realistic example sentences. Be concise and educational.';
                 }
-            } catch (error) {
-                console.error('Error loading file:', error);
-                statusText.textContent = 'Error loading file';
-            }
-        });
 
-        // ==================== EPUB HANDLING ====================
-        async function handleEpub(file) {
-            currentFileType = 'epub';
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    currentBook = ePub(event.target.result);
-                    await currentBook.ready;
-                    totalPages = currentBook.spine.spineItems.length;
-                    currentPageIndex = 0;
-                    
-                    populateToc(currentBook.navigation.toc);
-                    displayEpubPage();
-                    
-                    emptyState.style.display = 'none';
-                    readerWrapper.style.display = 'flex';
-                    prevBtn.disabled = true;
-                    nextBtn.disabled = totalPages <= 1;
-                    statusText.textContent = `EPUB loaded: ${totalPages} chapters`;
-                } catch (error) {
-                    console.error('EPUB error:', error);
-                    statusText.textContent = 'Error loading EPUB';
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${openaiApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: systemContent
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 280
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API Error');
                 }
-            };
-            reader.readAsArrayBuffer(file);
-        }
 
-        async function displayEpubPage() {
-            if (!currentBook || currentPageIndex >= totalPages) return;
-            
-            try {
-                const section = currentBook.spine.spineItems[currentPageIndex];
-                const html = await section.load(currentBook.load.bind(currentBook));
-                const text = html.textContent || '';
-                readerContent.innerHTML = text;
-                setupTextSelection();
-                updatePagination();
-                statusText.textContent = `Chapter ${currentPageIndex + 1} of ${totalPages}`;
-            } catch (error) {
-                console.error('Error displaying page:', error);
-            }
-        }
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                const lines = content.split('\n').filter(l => l.trim());
 
-        function populateToc(tocItems) {
-            tocList.innerHTML = '';
-            tocItems.forEach((item, index) => {
-                const li = document.createElement('li');
-                const button = document.createElement('button');
-                button.className = 'toc-item';
-                button.textContent = item.label;
-                button.addEventListener('click', () => {
-                    currentPageIndex = index;
-                    displayEpubPage();
-                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
-                    button.classList.add('active');
-                });
-                li.appendChild(button);
-                tocList.appendChild(li);
-            });
-        }
+                // Parse response more carefully
+                let translation = 'N/A';
+                let definition = 'N/A';
+                let exampleLines = [];
 
-        // ==================== TXT HANDLING ====================
-        async function handleTxt(file) {
-            currentFileType = 'txt';
-            const text = await file.text();
-            const lines = text.split('\n').filter(line => line.trim());
-            const chunkSize = 50;
-            currentBook = [];
-            
-            for (let i = 0; i < lines.length; i += chunkSize) {
-                currentBook.push(lines.slice(i, i + chunkSize).join('\n'));
-            }
-            
-            totalPages = currentBook.length;
-            currentPageIndex = 0;
-            
-            populateTxtToc();
-            displayTxtPage();
-            
-            emptyState.style.display = 'none';
-            readerWrapper.style.display = 'flex';
-            prevBtn.disabled = true;
-            nextBtn.disabled = totalPages <= 1;
-            statusText.textContent = `Text loaded: ${totalPages} pages`;
-        }
-
-        function displayTxtPage() {
-            if (!currentBook || currentPageIndex >= totalPages) return;
-            readerContent.innerHTML = '';
-            const pre = document.createElement('pre');
-            pre.className = 'txt-reader';
-            pre.textContent = currentBook[currentPageIndex];
-            readerContent.appendChild(pre);
-            setupTextSelection();
-            updatePagination();
-            statusText.textContent = `Page ${currentPageIndex + 1} of ${totalPages}`;
-        }
-
-        function populateTxtToc() {
-            tocList.innerHTML = '';
-            for (let i = 0; i < Math.min(totalPages, 20); i++) {
-                const li = document.createElement('li');
-                const button = document.createElement('button');
-                button.className = 'toc-item';
-                button.textContent = `Page ${i + 1}`;
-                button.addEventListener('click', () => {
-                    currentPageIndex = i;
-                    displayTxtPage();
-                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
-                    button.classList.add('active');
-                });
-                li.appendChild(button);
-                tocList.appendChild(li);
-            }
-        }
-
-        // ==================== PDF HANDLING ====================
-        async function handlePdf(file) {
-            currentFileType = 'pdf';
-            pdfjsLib.getDocument(await file.arrayBuffer()).promise.then(pdf => {
-                pdfDoc = pdf;
-                totalPages = pdf.numPages;
-                currentPageIndex = 0;
+                if (lines.length > 0) {
+                    translation = lines[0].replace(/[\[\]]/g, '').trim();
+                }
+                if (lines.length > 1) {
+                    // Second line contains "Word - Definition"
+                    const defLine = lines[1].replace(/^\[|\]$/g, '').trim();
+                    const defParts = defLine.split(' - ');
+                    definition = defParts.length > 1 ? defParts.slice(1).join(' - ').trim() : defLine;
+                }
                 
-                populatePdfToc();
-                displayPdfPage();
-                
-                emptyState.style.display = 'none';
-                readerWrapper.style.display = 'flex';
-                prevBtn.disabled = true;
-                nextBtn.disabled = totalPages <= 1;
-                statusText.textContent = `PDF loaded: ${totalPages} pages`;
-            });
-        }
+                // Collect example lines (usually lines 2+)
+                exampleLines = lines.slice(2)
+                    .filter(l => l.trim() && !/^[0-9]\.?\s*$/.test(l) && !l.includes('EXAMPLES') && !l.includes('examples'))
+                    .map(l => l.replace(/^[0-9]+\.\s*\[|\]$/g, '').trim())
+                    .filter(l => l.length > 0);
 
-        async function displayPdfPage() {
-            if (!pdfDoc || currentPageIndex >= totalPages) return;
-            
-            const page = await pdfDoc.getPage(currentPageIndex + 1);
-            const textContent = await page.getTextContent();
-            readerContent.innerHTML = '';
-            
-            let currentLine = '';
-            textContent.items.forEach(item => {
-                currentLine += item.str + ' ';
-                if (item.hasEOL) {
-                    const p = document.createElement('p');
-                    p.textContent = currentLine.trim();
-                    readerContent.appendChild(p);
-                    currentLine = '';
-                }
-            });
-            
-            if (currentLine.trim()) {
-                const p = document.createElement('p');
-                p.textContent = currentLine.trim();
-                readerContent.appendChild(p);
-            }
-            
-            setupTextSelection();
-            updatePagination();
-            statusText.textContent = `Page ${currentPageIndex + 1} of ${totalPages}`;
-        }
+                const result = {
+                    word,
+                    translation,
+                    definition,
+                    examples: exampleLines.slice(0, 3),
+                    language: currentLanguage,
+                    definitionLanguage: definitionLanguage
+                };
 
-        function populatePdfToc() {
-            tocList.innerHTML = '';
-            for (let i = 0; i < Math.min(totalPages, 1000); i++) {
-                const li = document.createElement('li');
-                const button = document.createElement('button');
-                button.className = 'toc-item';
-                button.textContent = `Page ${i + 1}`;
-                button.addEventListener('click', () => {
-                    currentPageIndex = i;
-                    displayPdfPage();
-                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
-                    button.classList.add('active');
-                });
-                li.appendChild(button);
-                tocList.appendChild(li);
+                // Cache with language-specific key
+                await library.cacheTranslation(cacheKey, result);
+                return result;
+            } catch (error) {
+                console.error('Translation error:', error);
+                return {
+                    word,
+                    translation: '❌ Error',
+                    definition: error.message || 'Failed to fetch translation.',
+                    examples: [],
+                    language: currentLanguage,
+                    definitionLanguage: currentLanguage
+                };
             }
         }
 
-        // ==================== TEXT SELECTION & TRANSLATION ====================
-        function setupTextSelection() {
-            readerContent.addEventListener('mouseup', handleTextSelection);
-        }
+        // ==================== MOBILE DETECTION ====================
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // ==================== TEXT SELECTION ====================
+        let lastSelectionText = '';
+        let lastSelectionRect = null;
 
         async function handleTextSelection() {
             const selection = window.getSelection();
@@ -1053,80 +948,489 @@ Examples:
 
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            
-            // Show loading state
+            lastSelectionRect = rect;
+            lastSelectionText = word;
+
+            // Show mobile AI button if on mobile
+            if (isMobile) {
+                showMobileAIButton(rect);
+                return;
+            }
+
+            // Desktop: show popup immediately
+            await showTranslationPopup(word, rect);
+        }
+
+        async function showTranslationPopup(word, rect) {
             popupWord.textContent = word;
             popupUkrainian.textContent = '⏳ Loading...';
-            popupTranslation.textContent = 'Fetching translation from OpenAI...';
+            popupTranslation.textContent = 'Fetching...';
             popupExamples.innerHTML = '';
-            translationPopup.classList.add('show');
-            translationPopup.style.left = (rect.left + rect.width / 2 - 175) + 'px';
-            translationPopup.style.top = (rect.top - 10) + 'px';
 
-            // Fetch real translation from OpenAI
+            // Position popup: bottom if selection near top, top otherwise
+            let topPos;
+            if (rect.top < 150) {
+                topPos = rect.bottom + 10;
+            } else {
+                topPos = rect.top - 20;
+            }
+
+            let leftPos = Math.max(10, Math.min(rect.left, window.innerWidth - 370));
+            translationPopup.style.left = leftPos + 'px';
+            translationPopup.style.top = topPos + 'px';
+            translationPopup.classList.add('show');
+
             const result = await fetchOpenAITranslation(word);
+
+            popupWord.textContent = word;
             
-            popupUkrainian.textContent = result.ukrainian;
-            popupTranslation.textContent = result.translation;
+            // Update labels and header text based on language
+            let translationLabel = 'Translation:';
+            let definitionLabel = 'Definition:';
+            let examplesLabel = 'Examples:';
             
-            popupExamples.innerHTML = '<div class="popup-example-title">Examples:</div>';
+            if (currentLanguage === 'ua') {
+                translationLabel = 'Переклад:';
+                definitionLabel = 'Значення (укр):';
+                examplesLabel = 'Приклади:';
+            } else if (currentLanguage === 'ru') {
+                translationLabel = 'Перевод:';
+                definitionLabel = 'Определение (рус):';
+                examplesLabel = 'Примеры:';
+            } else {
+                translationLabel = 'Translation:';
+                definitionLabel = 'Definition:';
+                examplesLabel = 'Examples:';
+            }
+            
+            // Set translation (word in target language)
+            popupUkrainian.textContent = result.translation;
+            popupUkrainian.style.color = 'var(--accent)';
+            
+            // Set definition with localized label
+            const definitionWithLabel = `${definitionLabel} ${result.definition}`;
+            popupTranslation.textContent = result.definition;
+
+            // Set examples section with localized label
+            popupExamples.innerHTML = `<div class="font-semibold text-xs mb-2" style="color: var(--text-secondary);">${examplesLabel}</div>`;
             if (result.examples && result.examples.length > 0) {
-                result.examples.forEach(example => {
+                result.examples.slice(0, 3).forEach(ex => {
                     const div = document.createElement('div');
-                    div.className = 'popup-example';
-                    div.innerHTML = example.replace(new RegExp(`\\b${word}\\b`, 'gi'), 
-                        `<span class="popup-word-highlighted">$&</span>`);
+                    div.className = 'italic p-2 rounded';
+                    div.style.backgroundColor = 'var(--bg-tertiary)';
+                    div.innerHTML = ex.replace(new RegExp(`\\b${word}\\b`, 'gi'), 
+                        `<strong style="color: var(--accent);">$&</strong>`);
                     popupExamples.appendChild(div);
                 });
-            } else {
-                const noExamples = document.createElement('div');
-                noExamples.className = 'popup-example';
-                noExamples.textContent = 'No examples available.';
-                popupExamples.appendChild(noExamples);
             }
         }
 
+        function showMobileAIButton(rect) {
+            const button = document.getElementById('mobileAIButton');
+            button.style.left = (rect.right + 10) + 'px';
+            button.style.top = (rect.top - 20) + 'px';
+            button.classList.add('show');
+        }
+
+        function setupTextSelection() {
+            // Desktop: mouseup for mouse selection
+            readerContent.addEventListener('mouseup', () => {
+                setTimeout(handleTextSelection, 100);
+            });
+
+            // Mobile: selectionchange for touch selection
+            if (isMobile) {
+                document.addEventListener('selectionchange', () => {
+                    const selection = window.getSelection();
+                    if (selection.toString().trim() && readerContent.contains(selection.anchorNode)) {
+                        setTimeout(handleTextSelection, 250);
+                    }
+                });
+
+                // Touchend for immediate mobile response
+                readerContent.addEventListener('touchend', () => {
+                    setTimeout(handleTextSelection, 150);
+                });
+            }
+        }
+
+        const mobileAIButton = document.getElementById('mobileAIButton');
+        mobileAIButton.addEventListener('click', async () => {
+            if (lastSelectionText && lastSelectionRect) {
+                await showTranslationPopup(lastSelectionText, lastSelectionRect);
+                mobileAIButton.classList.remove('show');
+            }
+        });
+
         closePopup.addEventListener('click', () => {
             translationPopup.classList.remove('show');
+            document.getElementById('mobileAIButton').classList.remove('show');
         });
 
         document.addEventListener('click', (e) => {
-            if (!translationPopup.contains(e.target) && !readerContent.contains(e.target)) {
+            if (!translationPopup.contains(e.target) && !readerContent.contains(e.target) && e.target !== mobileAIButton) {
                 translationPopup.classList.remove('show');
+                mobileAIButton.classList.remove('show');
             }
         });
 
-        // ==================== PAGINATION ====================
-        prevBtn.addEventListener('click', () => {
-            if (currentPageIndex > 0) {
-                currentPageIndex--;
-                displayCurrentPage();
-            }
+        // ==================== FONT SIZE ====================
+        fontDecBtn.addEventListener('click', () => {
+            fontSize = Math.max(12, fontSize - 1);
+            readerContent.style.fontSize = fontSize + 'px';
+            fontSizeDisplay.textContent = fontSize + 'px';
         });
 
-        nextBtn.addEventListener('click', () => {
-            if (currentPageIndex < totalPages - 1) {
-                currentPageIndex++;
-                displayCurrentPage();
-            }
+        fontIncBtn.addEventListener('click', () => {
+            fontSize = Math.min(24, fontSize + 1);
+            readerContent.style.fontSize = fontSize + 'px';
+            fontSizeDisplay.textContent = fontSize + 'px';
         });
 
-        function displayCurrentPage() {
-            if (currentFileType === 'epub') displayEpubPage();
-            else if (currentFileType === 'txt') displayTxtPage();
-            else if (currentFileType === 'pdf') displayPdfPage();
-            updatePagination();
+        // ==================== READER ====================
+        async function openBook(bookId) {
+            const book = await library.getBook(bookId);
+            if (!book) return;
+
+            currentBookId = bookId;
+            currentBook = book;
+            currentFileType = book.fileType;
+            currentPageIndex = book.lastPosition?.pageIndex || 0;
+            currentBookTitle.textContent = book.title;
+
+            libraryView.style.display = 'none';
+            readerView.style.display = 'flex';
+
+            const blob = new Blob([book.fileData], { type: 'application/octet-stream' });
+            const file = new File([blob], book.fileName, { type: 'application/octet-stream' });
+
+            try {
+                if (book.fileType === 'epub') {
+                    await loadEpub(file);
+                } else if (book.fileType === 'txt') {
+                    await loadTxt(file);
+                } else if (book.fileType === 'pdf') {
+                    await loadPdf(file);
+                }
+
+                setupTextSelection();
+                startProgressSync();
+                await library.updateBook(bookId, { lastReadDate: new Date().toISOString() });
+            } catch (error) {
+                console.error('Error opening book:', error);
+                alert('Error opening book: ' + error.message);
+            }
+        }
+
+        async function loadEpub(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const book = ePub(e.target.result);
+                        await book.ready;
+                        totalPages = book.spine.spineItems.length;
+                        currentPageIndex = Math.min(currentPageIndex, totalPages - 1);
+
+                        const renderEpubPage = async () => {
+                            const section = book.spine.spineItems[currentPageIndex];
+                            const html = await section.load(book.load.bind(book));
+                            readerContent.innerHTML = html.textContent || '';
+                            updatePagination();
+                        };
+
+                        prevBtn.onclick = async () => {
+                            if (currentPageIndex > 0) {
+                                currentPageIndex--;
+                                await renderEpubPage();
+                                updatePagination();
+                                saveProgressImmediate();
+                            }
+                        };
+
+                        nextBtn.onclick = async () => {
+                            if (currentPageIndex < totalPages - 1) {
+                                currentPageIndex++;
+                                await renderEpubPage();
+                                updatePagination();
+                                saveProgressImmediate();
+                            }
+                        };
+
+                        await renderEpubPage();
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function loadTxt(file) {
+            const text = await file.text();
+            const lines = text.split('\n').filter(l => l.trim());
+            const pages = [];
+            for (let i = 0; i < lines.length; i += 50) {
+                pages.push(lines.slice(i, i + 50).join('\n'));
+            }
+
+            currentBook.pages = pages;
+            totalPages = pages.length;
+            currentPageIndex = Math.min(currentPageIndex, totalPages - 1);
+
+            const renderTxtPage = () => {
+                const pre = document.createElement('pre');
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.style.wordWrap = 'break-word';
+                pre.textContent = pages[currentPageIndex];
+                readerContent.innerHTML = '';
+                readerContent.appendChild(pre);
+                updatePagination();
+            };
+
+            prevBtn.onclick = () => {
+                if (currentPageIndex > 0) {
+                    currentPageIndex--;
+                    renderTxtPage();
+                    updatePagination();
+                    saveProgressImmediate();
+                }
+            };
+
+            nextBtn.onclick = () => {
+                if (currentPageIndex < totalPages - 1) {
+                    currentPageIndex++;
+                    renderTxtPage();
+                    updatePagination();
+                    saveProgressImmediate();
+                }
+            };
+
+            renderTxtPage();
+        }
+
+        async function loadPdf(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        pdfDoc = await pdfjsLib.getDocument(e.target.result).promise;
+                        totalPages = pdfDoc.numPages;
+                        currentPageIndex = Math.min(currentPageIndex, totalPages - 1);
+
+                        const renderPdfPage = async () => {
+                            const page = await pdfDoc.getPage(currentPageIndex + 1);
+                            const textContent = await page.getTextContent();
+                            readerContent.innerHTML = '';
+
+                            let currentLine = '';
+                            textContent.items.forEach(item => {
+                                currentLine += item.str + ' ';
+                                if (item.hasEOL) {
+                                    const p = document.createElement('p');
+                                    p.textContent = currentLine.trim();
+                                    readerContent.appendChild(p);
+                                    currentLine = '';
+                                }
+                            });
+
+                            if (currentLine.trim()) {
+                                const p = document.createElement('p');
+                                p.textContent = currentLine.trim();
+                                readerContent.appendChild(p);
+                            }
+
+                            updatePagination();
+                        };
+
+                        prevBtn.onclick = async () => {
+                            if (currentPageIndex > 0) {
+                                currentPageIndex--;
+                                await renderPdfPage();
+                                updatePagination();
+                                saveProgressImmediate();
+                            }
+                        };
+
+                        nextBtn.onclick = async () => {
+                            if (currentPageIndex < totalPages - 1) {
+                                currentPageIndex++;
+                                await renderPdfPage();
+                                updatePagination();
+                                saveProgressImmediate();
+                            }
+                        };
+
+                        await renderPdfPage();
+                        resolve();
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsArrayBuffer(file);
+            });
         }
 
         function updatePagination() {
             pageInfo.textContent = `${currentPageIndex + 1} / ${totalPages}`;
             prevBtn.disabled = currentPageIndex === 0;
             nextBtn.disabled = currentPageIndex === totalPages - 1;
+            
+            // Sync slider with current page
+            pageSlider.max = totalPages;
+            pageSlider.value = currentPageIndex + 1;
+            updateSliderBackground();
         }
 
+        function updateSliderBackground() {
+            const sliderValue = (pageSlider.value - pageSlider.min) / (pageSlider.max - pageSlider.min) * 100;
+            pageSlider.style.setProperty('--slider-percent', sliderValue + '%');
+        }
+
+        // ==================== PROGRESS SYNC ====================
+        function startProgressSync() {
+            if (saveProgressInterval) clearInterval(saveProgressInterval);
+            saveProgressInterval = setInterval(() => {
+                if (currentBookId && currentFileType) {
+                    saveBookProgress();
+                }
+            }, 3000);  // Increased sync frequency to 3 seconds for better responsiveness
+        }
+
+        function saveBookProgress() {
+            if (currentBookId && currentFileType && totalPages > 0) {
+                const progress = Math.round((currentPageIndex + 1) / totalPages * 100);
+                library.updateBook(currentBookId, {
+                    lastPosition: { pageIndex: currentPageIndex, fileType: currentFileType },
+                    lastReadDate: new Date().toISOString(),
+                    progress: progress
+                }).catch(err => console.error('Progress save error:', err));
+            }
+        }
+
+        // Save progress immediately when page changes (slider or buttons)
+        function saveProgressImmediate() {
+            if (currentBookId && currentFileType && totalPages > 0) {
+                const progress = Math.round((currentPageIndex + 1) / totalPages * 100);
+                library.updateBook(currentBookId, {
+                    lastPosition: { pageIndex: currentPageIndex, fileType: currentFileType },
+                    lastReadDate: new Date().toISOString(),
+                    progress: progress
+                }).catch(err => console.error('Immediate save error:', err));
+            }
+        }
+
+        // ==================== FILE UPLOAD ====================
+        libraryBtn.addEventListener('click', () => {
+            libraryView.style.display = 'block';
+            readerView.style.display = 'none';
+            if (saveProgressInterval) clearInterval(saveProgressInterval);
+            renderLibrary();
+        });
+
+        uploadNewBtn.addEventListener('click', () => uploadModal.classList.add('show'));
+        closeUploadModal.addEventListener('click', () => uploadModal.classList.remove('show'));
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.backgroundColor = 'var(--bg-tertiary)';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.backgroundColor = '';
+        });
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                await handleFileUpload(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        async function handleFileUpload(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['epub', 'pdf', 'txt'].includes(ext)) {
+                alert('Unsupported file type. Please upload EPUB, PDF, or TXT.');
+                return;
+            }
+
+            try {
+                const book = await library.addBook(file, ext);
+                uploadModal.classList.remove('show');
+                renderLibrary();
+                openBook(book.id);
+            } catch (error) {
+                alert('Error adding book: ' + error.message);
+            }
+        }
+
+        // ==================== PAGE SLIDER LOGIC ====================
+        pageSlider.addEventListener('input', (e) => {
+            currentPageIndex = parseInt(e.target.value) - 1;
+            updateSliderBackground();
+            pageInfo.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+        });
+
+        pageSlider.addEventListener('change', async (e) => {
+            currentPageIndex = parseInt(e.target.value) - 1;
+            
+            if (currentFileType === 'epub') {
+                const section = currentBook.spine.spineItems[currentPageIndex];
+                const html = await section.load(currentBook.load.bind(currentBook));
+                readerContent.innerHTML = html.textContent || '';
+                updatePagination();
+                saveProgressImmediate();
+            } else if (currentFileType === 'txt') {
+                const pre = document.createElement('pre');
+                pre.style.whiteSpace = 'pre-wrap';
+                pre.style.wordWrap = 'break-word';
+                pre.textContent = currentBook.pages[currentPageIndex];
+                readerContent.innerHTML = '';
+                readerContent.appendChild(pre);
+                updatePagination();
+                saveProgressImmediate();
+            } else if (currentFileType === 'pdf') {
+                const page = await pdfDoc.getPage(currentPageIndex + 1);
+                const textContent = await page.getTextContent();
+                readerContent.innerHTML = '';
+
+                let currentLine = '';
+                textContent.items.forEach(item => {
+                    currentLine += item.str + ' ';
+                    if (item.hasEOL) {
+                        const p = document.createElement('p');
+                        p.textContent = currentLine.trim();
+                        readerContent.appendChild(p);
+                        currentLine = '';
+                    }
+                });
+
+                if (currentLine.trim()) {
+                    const p = document.createElement('p');
+                    p.textContent = currentLine.trim();
+                    readerContent.appendChild(p);
+                }
+                updatePagination();
+                saveProgressImmediate();
+            }
+        });
+
         // ==================== INITIALIZATION ====================
-        fontSizeSlider.value = fontSize;
-        readerContent.style.fontSize = fontSize + 'px';
+        (async () => {
+            const savedTheme = await library.getSetting('theme') || 'light';
+            setTheme(savedTheme);
+            renderLibrary();
+            updateSliderBackground();
+        })();
     </script>
 </body>
 </html>
